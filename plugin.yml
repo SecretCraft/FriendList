@@ -1,0 +1,8 @@
+name: FriendList
+version: 1.0
+main: com.github.secretcraft.java.FriendList
+description: Add or remove your Friends to/from a Friendlist.
+depend: [ChatChannelManager, PermissionsEx]
+commands:
+  fl:
+    description: adds,removes,lists Friends ingame
