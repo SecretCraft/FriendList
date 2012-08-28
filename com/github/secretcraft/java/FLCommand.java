@@ -37,7 +37,7 @@ public class FLCommand {
 				
 				Map<String, DataType> columnDataTypeMap = new HashMap<String, DataType>();
 				columnDataTypeMap.put("player", new DataType(DataType.TEXT));
-				columnDataTypeMap.put("friend", new DataType(DataType.TEXT + ", PRIMARY KEY (id)"));
+				columnDataTypeMap.put("friend", new DataType(DataType.TEXT));
 				friend_list.create(columnDataTypeMap);
 				
 			}
@@ -115,14 +115,16 @@ public class FLCommand {
 		try {
 			ResultSet results = this.getResults(player);
 			String friend = "";
+			Player onlineFriend = null;
 			while(results.next()) {
 				friend = results.getString("friend");
-				Player onlineFriend = Utils.getPlayerByName(friend);
+				onlineFriend = Utils.getPlayerByName(friend);
 				if(onlineFriend == null) {
 					tempMessage += ChatColor.RED + friend + ChatColor.WHITE + ", ";
+				} else {
+					String displayName = Utils.getDisplayNameFormat(onlineFriend);
+					tempMessage = displayName + ChatColor.WHITE + ", " + tempMessage;
 				}
-				String displayName = Utils.getDisplayNameFormat(onlineFriend);
-				tempMessage = displayName + ChatColor.WHITE + ", " + tempMessage;	
 			}
 			if(tempMessage.equals("") || tempMessage.length() == 0) {
 				player.sendMessage(ChatColor.GRAY + "Deine Freundesliste ist leer!");
@@ -133,6 +135,40 @@ public class FLCommand {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		player.sendMessage(ChatColor.GRAY + "Deine Freundesliste:");
+		player.sendMessage(tempMessage);
+	}
+	
+	//---------------------------------------------------------------------------------------------------------------
+	
+	public void showOnline(Player player) {
+		
+		String tempMessage = "";
+		
+		try {
+			ResultSet results = this.getResults(player);
+			String friend = "";
+			Player onlineFriend = null;
+			while(results.next()) {
+				friend = results.getString("friend");
+				onlineFriend = Utils.getPlayerByName(friend);
+				if(onlineFriend == null) {
+					tempMessage += "";
+				} else {
+					String displayName = Utils.getDisplayNameFormat(onlineFriend);
+					tempMessage = displayName + ChatColor.WHITE + ", " + tempMessage;
+					log.info(tempMessage);
+				}
+			}
+			if(tempMessage.equals("") || tempMessage.length() == 0) {
+				player.sendMessage(ChatColor.GRAY + "Deine Freundesliste ist leer, oder keiner deiner Freunde ist online.");
+				return;
+			}
+			tempMessage = tempMessage.substring(0, tempMessage.length() - 2);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		player.sendMessage(ChatColor.GRAY + "Deine Freundesliste:");
 		player.sendMessage(tempMessage);
 	}
 	

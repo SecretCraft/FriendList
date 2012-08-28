@@ -38,12 +38,11 @@ public class FriendList extends JavaPlugin{
 		config = this.getConfig();
 		denyMap = new HashMap<Player,Player>();
 		
-		if(config.get("enable") == null) {
+		/*if(config.get("enable") == null) {
 			initConfig();
-		}
+		}*/
 		
 		this.reloadConfig();
-		
 		if(config.getBoolean("enable") == true) {
 			connectToDB();
 			flCommand = new FLCommand(log, this);
@@ -108,13 +107,18 @@ public class FriendList extends JavaPlugin{
 			
 			if(cmdName.equals("fl")) {
 				
+				if(args.length == 0) {
+					showUsage(player);
+					return false;
+				}
+				
 				if(args[0].equalsIgnoreCase("msg")) {
 					String message = EssentialsCommand.getFinalArg(args, 1);
 					flMessage.sendMsg(player, message);
 					return true;
 				}
 				
-				if(args.length > 2 || args.length < 1){
+				if(args.length > 2){
 					player.sendMessage(error);
 					return false;
 				}
@@ -190,27 +194,28 @@ public class FriendList extends JavaPlugin{
 						player.sendMessage(error);
 						return false;
 					}
-					
 					flCommand.showList(player);
-					
+					return true;
 				}
 				
-				if(args[0].equalsIgnoreCase("reload")) {
+				if(args[0].equalsIgnoreCase("online")) {
 					if(args.length != 1) {
 						player.sendMessage(error);
 						return false;
 					}
+					flCommand.showOnline(player);
+					return true;
 				}
 				
 			}
+			player.sendMessage(error);
 			return false;
 		}
 	
 		//---------------------------------------------------------------------------------------------------------------
 		
 		private void initConfig() {
-			config.addDefault("enable", false);
-			config.addDefault("add-only-online-players", true);
+			config.addDefault("enable", true);
 			config.addDefault("Settings.MySQL.Host", "localhost");
 			config.addDefault("Settings.MySQL.Database", "friendlist");
 			config.addDefault("Settings.MySQL.User", "friendlist");
@@ -250,6 +255,16 @@ public class FriendList extends JavaPlugin{
 		
 		public Connection getConnection() {
 			return connection;
+		}
+		
+		private void showUsage(Player player) {
+			player.sendMessage(ChatColor.GOLD + "All Friendlist Commands:");
+			player.sendMessage(ChatColor.AQUA + "- /fl add <playername>: " + ChatColor.GRAY + "Fügt einen Spieler hinzu.");
+			player.sendMessage(ChatColor.AQUA + "- /fl accept: " + ChatColor.GRAY + "Nimmt eine Freundschaftsanfrage an.");
+			player.sendMessage(ChatColor.AQUA + "- /fl deny: " + ChatColor.GRAY + "Lehnt eine Freundschaftsanfrage ab.");
+			player.sendMessage(ChatColor.AQUA + "- /fl remove <playername>: " + ChatColor.GRAY + "Löscht einen Spieler.");
+			player.sendMessage(ChatColor.AQUA + "- /fl list: " + ChatColor.GRAY + "Zeigt deine Freundesliste an.");
+			player.sendMessage(ChatColor.AQUA + "- /fl online: " + ChatColor.GRAY + "Zeigt alle Onlinefreunde an.");
 		}
 		
 	}
