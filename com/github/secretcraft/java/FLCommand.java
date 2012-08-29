@@ -2,7 +2,9 @@ package com.github.secretcraft.java;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -60,7 +62,7 @@ public class FLCommand {
 			while (res.next()) {
 				friendName = res.getString("friend");
 				playerName = res.getString("player");
-				if(friendName.equals(name) && playerName.equals(player.getName())) {
+				if(friendName.equalsIgnoreCase(name) && playerName.equalsIgnoreCase(player.getName())) {
 					player.sendMessage(ChatColor.RED + "Der Spieler: " + ChatColor.AQUA + name + ChatColor.RED +
 							" ist bereits in deiner Freundesliste!");
 					return;
@@ -110,54 +112,72 @@ public class FLCommand {
 	
 	public void showList(Player player) {
 		
-		String tempMessage = "";
+		List<String> strList = new ArrayList<String>();
+		String tempMessageOnline = "";
+		String tempMessageOffline = "";
 		
 		try {
-			ResultSet results = this.getResults(player);
+			ResultSet results = Utils.getResults(player, connection);
 			String friend = "";
 			Player onlineFriend = null;
 			while(results.next()) {
 				friend = results.getString("friend");
-				onlineFriend = Utils.getPlayerByName(friend);
+				strList.add(friend);
+			}
+			strList = Utils.sortAlphabetic(strList);
+			for(int i = 0; i < strList.size(); i++) {
+				onlineFriend = Utils.getPlayerByName(strList.get(i));
 				if(onlineFriend == null) {
-					tempMessage += ChatColor.RED + friend + ChatColor.WHITE + ", ";
+					tempMessageOffline += ChatColor.RED + strList.get(i) + ChatColor.GRAY + ", ";
 				} else {
 					String displayName = Utils.getDisplayNameFormat(onlineFriend);
-					tempMessage = displayName + ChatColor.WHITE + ", " + tempMessage;
+					tempMessageOnline = displayName + ChatColor.GRAY + ", ";
 				}
 			}
-			if(tempMessage.equals("") || tempMessage.length() == 0) {
+			if((tempMessageOnline.equals("") || tempMessageOnline.length() == 0) && 
+					(tempMessageOffline.equals("") || tempMessageOffline.length() == 0)) {
+				
 				player.sendMessage(ChatColor.GRAY + "Deine Freundesliste ist leer!");
 				return;
+				
 			}
-			tempMessage = tempMessage.substring(0, tempMessage.length() - 2);
+			if(!tempMessageOnline.equals("")) {
+				tempMessageOnline = tempMessageOnline.substring(0, tempMessageOnline.length() - 2);
+				this.showOnline(player, tempMessageOnline);
+			}
+			if(!tempMessageOffline.equals("")) {
+				tempMessageOffline = tempMessageOffline.substring(0, tempMessageOffline.length() - 2);
+				this.showOffline(player, tempMessageOffline);
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		player.sendMessage(ChatColor.GRAY + "Deine Freundesliste:");
-		player.sendMessage(tempMessage);
 	}
 	
 	//---------------------------------------------------------------------------------------------------------------
 	
-	public void showOnline(Player player) {
+	public void showOnlyOnline(Player player) {
 		
+		List<String> strList = new ArrayList<String>();
 		String tempMessage = "";
 		
 		try {
-			ResultSet results = this.getResults(player);
+			ResultSet results = Utils.getResults(player, connection);
 			String friend = "";
 			Player onlineFriend = null;
 			while(results.next()) {
 				friend = results.getString("friend");
-				onlineFriend = Utils.getPlayerByName(friend);
+				strList.add(friend);
+			}
+			Utils.sortAlphabetic(strList);
+			for(int i = 0; i < strList.size(); i++) {
+				onlineFriend = Utils.getPlayerByName(strList.get(i));
 				if(onlineFriend == null) {
 					tempMessage += "";
 				} else {
 					String displayName = Utils.getDisplayNameFormat(onlineFriend);
 					tempMessage = displayName + ChatColor.WHITE + ", " + tempMessage;
-					log.info(tempMessage);
 				}
 			}
 			if(tempMessage.equals("") || tempMessage.length() == 0) {
@@ -168,22 +188,12 @@ public class FLCommand {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		player.sendMessage(ChatColor.GRAY + "Deine Freundesliste:");
-		player.sendMessage(tempMessage);
+		this.showOnline(player, tempMessage);
 	}
 	
 	//---------------------------------------------------------------------------------------------------------------
 	
-	public ResultSet getResults(Player player) {
-		ResultSet results = null;
-		try {
-			results = connection.query("SELECT friend FROM friend_list WHERE player ='"+player.getName()+"'");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return results;
-	}
+	
 	
 	//---------------------------------------------------------------------------------------------------------------
 	
@@ -199,6 +209,19 @@ public class FLCommand {
 		p.sendMessage(ChatColor.AQUA + "/fl deny   - den Spieler nicht aufnehmen.");
 				
 		playerMap.put(p,player);
+	}
+	
+	//---------------------------------------------------------------------------------------------------------------
+	
+	private void showOnline(Player player, String tempMessage) {
+		player.sendMessage(ChatColor.GOLD + "----Deine Freundesliste----");
+		player.sendMessage(ChatColor.GRAY + "Online:");
+		player.sendMessage(tempMessage);
+	}
+	
+	private void showOffline(Player player, String tempMessage) {
+		player.sendMessage(ChatColor.GRAY + "Offline:");
+		player.sendMessage(tempMessage);
 	}
 	
 	//---------------------------------------------------------------------------------------------------------------

@@ -1,6 +1,11 @@
 package com.github.secretcraft.java.utils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 import java.util.regex.Pattern;
+
+import net.windwaker.sql.Connection;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -51,6 +56,33 @@ public class Utils {
 			}
 		}
 		return null;
+	}
+	
+	public static List<String> sortAlphabetic(List<String> str) {
+		String temp;
+		for ( int i = 0;  i < str.size() - 1;  i++ ){
+            for ( int j = i + 1;  j < str.size();  j++ ){ 
+            	if ( str.get(i).compareToIgnoreCase( str.get(j) ) > 0 ){                                             
+            		// ascending sort
+            		temp = str.get(i);
+            		str.add(i, str.get(j));    // swapping
+            		str.add(j, temp);
+            	}
+            }
+		} 
+		return str;
+		
+	}
+	
+	public static ResultSet getResults(Player player, Connection connection) {
+		ResultSet results = null;
+		try {
+			results = connection.query("SELECT friend FROM friend_list WHERE player ='"+player.getName()+"'");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return results;
 	}
 	
 }

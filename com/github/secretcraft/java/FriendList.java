@@ -16,7 +16,11 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import ru.tehkode.permissions.PermissionUser;
+import ru.tehkode.permissions.bukkit.PermissionsEx;
+
 import com.earth2me.essentials.commands.EssentialsCommand;
+import com.github.secretcraft.java.listeners.LoginListener;
 import com.github.secretcraft.java.utils.Utils;
 
 public class FriendList extends JavaPlugin{
@@ -25,6 +29,7 @@ public class FriendList extends JavaPlugin{
 	private Configuration config;
 	private FLCommand flCommand;
 	private FLMessage flMessage;
+	private LoginListener loginListener;
 	private Map<Player,Player> denyMap;
 	Logger log;
 	
@@ -38,15 +43,17 @@ public class FriendList extends JavaPlugin{
 		config = this.getConfig();
 		denyMap = new HashMap<Player,Player>();
 		
-		/*if(config.get("enable") == null) {
+		if(config.get("enable") == null) {
 			initConfig();
-		}*/
+		}
 		
 		this.reloadConfig();
 		if(config.getBoolean("enable") == true) {
 			connectToDB();
 			flCommand = new FLCommand(log, this);
-			flMessage = new FLMessage(flCommand);
+			flMessage = new FLMessage(connection);
+			loginListener = new LoginListener(connection,this);
+			this.getServer().getPluginManager().registerEvents(loginListener, this);
 			log.info("FriendList enabled.");
 		} else {
 			log.info("FriendList disabled, check config.yml");
@@ -62,7 +69,6 @@ public class FriendList extends JavaPlugin{
 		super.onDisable();
 		
 		log.info("FriendList disabled.");
-		
 	}
 	
 	//---------------------------------------------------------------------------------------------------------------
@@ -70,19 +76,11 @@ public class FriendList extends JavaPlugin{
 	private void connectToDB() {
 		// zur Datenbank verbinden
 		connection = new Connection( config.getString("Settings.MySQL.Host") + "/" + config.getString("Settings.MySQL.Database") , Driver.getByProtocol("mysql"));
-		
+
 		try {
 			connection.connect( config.getString("Settings.MySQL.User"), config.getString("Settings.MySQL.Password"));
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
+		} catch (ClassNotFoundException | IllegalAccessException
+				| InstantiationException | SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -90,10 +88,10 @@ public class FriendList extends JavaPlugin{
 	
 	//---------------------------------------------------------------------------------------------------------------
 	
+		@Override
 		public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
 			
 			Player player = null;
-			
 			if(sender instanceof Player) {
 				player = (Player)sender;
 			} else {
@@ -101,7 +99,9 @@ public class FriendList extends JavaPlugin{
 				return false;
 			}
 			
-			String error = ChatColor.GRAY + "Korrekte Schreibweise ist: " + ChatColor.RED + "/fl <add>,<remove>,<list>,<online>"+ ChatColor.AQUA +" <Name>";
+			PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
+			
+			String error = ChatColor.GRAY + "Korrekte Schreibweise ist: " + ChatColor.RED + "/fl <add>,<remove>,<msg>,<list>,<online>,<togglemsg>";
 			
 			String cmdName = cmd.getName();
 			
@@ -203,8 +203,35 @@ public class FriendList extends JavaPlugin{
 						player.sendMessage(error);
 						return false;
 					}
-					flCommand.showOnline(player);
+					flCommand.showOnlyOnline(player);
 					return true;
+				}
+				
+				if(args[0].equalsIgnoreCase("reload")) {
+					if(args.length != 1) {
+						player.sendMessage(error);
+						return false;
+					}
+					if(user.has("friendlist.reload")) {
+						this.reloadConfig();
+						player.sendMessage(ChatColor.GREEN + "FriendList Config reloaded.");
+						return true;
+					} else {
+						player.sendMessage(ChatColor.RED + "You don't have the Permission to use this Command.");
+						return false;
+					}
+				}
+				
+				if(args[0].equalsIgnoreCase("togglemsg")) {
+					if(loginListener.getToggleMap().get(player)) {
+						loginListener.putToggleMap(player, false);
+						player.sendMessage(ChatColor.GRAY + "Login/Logout-Nachrichten: " + ChatColor.RED + "AUS");
+						return true;
+					} else {
+						loginListener.putToggleMap(player, true);
+						player.sendMessage(ChatColor.GRAY + "Login/Logout-Nachrichten: " + ChatColor.GREEN + "EIN");
+						return true;
+					}
 				}
 				
 			}
@@ -263,6 +290,7 @@ public class FriendList extends JavaPlugin{
 			player.sendMessage(ChatColor.AQUA + "- /fl accept: " + ChatColor.GRAY + "Nimmt eine Freundschaftsanfrage an.");
 			player.sendMessage(ChatColor.AQUA + "- /fl deny: " + ChatColor.GRAY + "Lehnt eine Freundschaftsanfrage ab.");
 			player.sendMessage(ChatColor.AQUA + "- /fl remove <playername>: " + ChatColor.GRAY + "Löscht einen Spieler.");
+			player.sendMessage(ChatColor.AQUA + "- /fl togglemsg: " + ChatColor.GRAY + "Stellt Login/Logout-Nachrichten AN/AUS.");
 			player.sendMessage(ChatColor.AQUA + "- /fl list: " + ChatColor.GRAY + "Zeigt deine Freundesliste an.");
 			player.sendMessage(ChatColor.AQUA + "- /fl online: " + ChatColor.GRAY + "Zeigt alle Onlinefreunde an.");
 		}
