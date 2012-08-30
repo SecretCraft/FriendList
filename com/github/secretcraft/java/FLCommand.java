@@ -38,6 +38,7 @@ public class FLCommand {
 			if(!(friend_list.exists())) {
 				
 				Map<String, DataType> columnDataTypeMap = new HashMap<String, DataType>();
+				columnDataTypeMap.put("id", new DataType("INT NOT NULL AUTO_INCREMENT PRIMARY KEY"));
 				columnDataTypeMap.put("player", new DataType(DataType.TEXT));
 				columnDataTypeMap.put("friend", new DataType(DataType.TEXT));
 				friend_list.create(columnDataTypeMap);
@@ -215,12 +216,12 @@ public class FLCommand {
 	
 	private void showOnline(Player player, String tempMessage) {
 		player.sendMessage(ChatColor.GOLD + "----Deine Freundesliste----");
-		player.sendMessage(ChatColor.GRAY + "Online:");
+		player.sendMessage(ChatColor.GREEN + "Online:");
 		player.sendMessage(tempMessage);
 	}
 	
 	private void showOffline(Player player, String tempMessage) {
-		player.sendMessage(ChatColor.GRAY + "Offline:");
+		player.sendMessage(ChatColor.RED + "Offline:");
 		player.sendMessage(tempMessage);
 	}
 	
