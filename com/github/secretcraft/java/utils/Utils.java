@@ -2,6 +2,7 @@ package com.github.secretcraft.java.utils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -22,6 +23,8 @@ public class Utils {
 	protected static Pattern chatItalicPattern = Pattern.compile("(?i)&([O])");
 	protected static Pattern chatResetPattern = Pattern.compile("(?i)&([R])");
 	
+	//---------------------------------------------------------------------------------------------------------------
+	
 	public static String getDisplayNameFormat(Player onlineFriend) {
 		PermissionUser user = PermissionsEx.getPermissionManager().getUser(onlineFriend);
 		String worldName = onlineFriend.getWorld().getName();
@@ -32,6 +35,8 @@ public class Utils {
 		String dpName = displayNameFormat.replace("%prefix", translateColorCodes(user.getPrefix(worldName))).replace("%suffix", translateColorCodes(user.getSuffix(worldName))).replace("%player", onlineFriend.getName());
 		return dpName;
 	}
+	
+	//---------------------------------------------------------------------------------------------------------------
 	
 	protected static String translateColorCodes(String string) {
 		if (string == null) {
@@ -49,6 +54,8 @@ public class Utils {
 		return newstring;
 	}
 	
+	//---------------------------------------------------------------------------------------------------------------
+	
 	public static Player getPlayerByName(String name) {
 		for(Player p : Bukkit.getOnlinePlayers()) {
 			if(p.getName().equals(name)) {
@@ -57,6 +64,8 @@ public class Utils {
 		}
 		return null;
 	}
+	
+	//---------------------------------------------------------------------------------------------------------------
 	
 	public static List<String> sortAlphabetic(List<String> str) {
 		String temp;
@@ -71,18 +80,36 @@ public class Utils {
             }
 		} 
 		return str;
-		
 	}
 	
-	public static ResultSet getResults(Player player, Connection connection) {
+	//---------------------------------------------------------------------------------------------------------------
+	
+	public static ArrayList<String> getResults(Player player, Connection connection) {
+		ArrayList<String> arr = new ArrayList<String>();
 		ResultSet results = null;
 		try {
 			results = connection.query("SELECT friend FROM friend_list WHERE player ='"+player.getName()+"'");
+			if(results.next()) {
+				do {
+					arr.add(results.getString("friend"));
+				} while(results.next());
+			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return results;
+		return arr;
+	}
+	
+	//---------------------------------------------------------------------------------------------------------------
+	
+	public static boolean checkFriendResult(Player player, ResultSet res) throws SQLException {
+		while(res.next()) {
+			String friend = res.getString("friend");
+			if(player.getName().equals(friend)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

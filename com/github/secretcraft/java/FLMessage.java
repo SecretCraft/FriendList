@@ -1,11 +1,8 @@
 package com.github.secretcraft.java;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import net.windwaker.sql.Connection;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -14,31 +11,26 @@ import com.github.secretcraft.java.utils.Utils;
 
 public class FLMessage {
 	
-	private Connection connection;
+	private FLCommand flCommand;
 	private List<Player> friendList = new LinkedList<Player>();
 	
 	//---------------------------------------------------------------------------------------------------------------
 	
-	public FLMessage(Connection connection) {
-		this.connection = connection;
+	public FLMessage(FLCommand flCommand) {
+		this.flCommand = flCommand;
 	}
 	
 	//---------------------------------------------------------------------------------------------------------------
 	
 	public void sendMsg(Player player, String message) {
 		
-		ResultSet results = Utils.getResults(player, connection);
+		ArrayList<String> results = flCommand.getFriendsFromFriendMap(player);
 		
-		try {
-			String friendName = "";
-			while (results.next()) {
-				friendName = results.getString("friend");
-				Player p = Utils.getPlayerByName(friendName);
-				friendList.add(p);
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		String friendName = "";
+		for(int i = 0; i < results.size(); i++) {
+			friendName = results.get(i);
+			Player p = Utils.getPlayerByName(friendName);
+			friendList.add(p);
 		}
 		if (friendList.isEmpty()) {
 			player.sendMessage(ChatColor.RED + "Nobody in your Friend-List is online.");
