@@ -127,13 +127,14 @@ public class FriendList extends JavaPlugin{
 					player.sendMessage(error);
 					return false;
 				}
-				try {
-					if(flCommand.checkPlayerInFriendMap(player, args[1])) {
-						
-					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if(player.getName().equals(args[1])) {
+					player.sendMessage(ChatColor.RED + "Du kannst dich nicht selbst adden!");
+					return false;
+				}
+				if(flCommand.checkPlayerInFriendMap(player, args[1])) {
+					player.sendMessage(ChatColor.RED + "Der Spieler " + Utils.getDisplayNameFormat(Utils.getPlayerByName(args[1])) + 
+									   ChatColor.RED + " ist bereits in deiner Freundesliste.");
+					return false;
 				}
 				if(playerExists(args[1])) {
 					if(playerIsOnline(args[1])) {
@@ -185,7 +186,11 @@ public class FriendList extends JavaPlugin{
 					player.sendMessage(error);
 					return false;
 				}
-					
+				
+				if(player.getName().equals(args[1])) {
+					player.sendMessage(ChatColor.RED + "Du stehst nicht in deiner Freundesliste!");
+					return false;
+				}
 				if(playerExists(args[1])) {
 					flCommand.removeFriend(player,args[1]);
 					return true;

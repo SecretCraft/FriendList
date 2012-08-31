@@ -103,6 +103,7 @@ public class FLCommand {
 			connection.update("DELETE FROM friend_list WHERE player = '" + player.getName() + "' && friend = '" + name + "'");
 			connection.update("DELETE FROM friend_list WHERE player = '" + name + "' && friend = '" + player.getName() + "'");
 			this.updateFriendMap(player);
+			this.updateFriendMap(Utils.getPlayerByName(name));
 			
 		} catch(SQLException e) {
 			e.getStackTrace();
@@ -137,7 +138,7 @@ public class FLCommand {
 		for(int i = 0; i < strList.size(); i++) {
 			onlineFriend = Utils.getPlayerByName(strList.get(i));
 			if(onlineFriend == null) {
-				tempMessageOffline += ChatColor.RED + strList.get(i) + ChatColor.GRAY + ", ";
+				tempMessageOffline += strList.get(i) + ChatColor.WHITE + ", ";
 			} else {
 				String displayName = Utils.getDisplayNameFormat(onlineFriend);
 				tempMessageOnline = displayName + ChatColor.GRAY + ", ";
@@ -202,13 +203,17 @@ public class FLCommand {
 	
 	public void playerAddMessage(Player player, String name) {
 		Player p = Utils.getPlayerByName(name);
+		
 		if(p == null) {
-			player.sendMessage(ChatColor.RED + "Der Spieler " + name + " ist nicht online.");
+			player.sendMessage(ChatColor.RED + "Der Spieler " + ChatColor.AQUA + name + ChatColor.RED + " ist nicht online.");
+			return;
 		}
+		
 		if((getPlayer(p) != null && getPlayer(p).equals(player)) || (getPlayer(player) != null && getPlayer(player).equals(p))) {
 			player.sendMessage(ChatColor.RED + "Es gibt bereits einen Antrag.");
 			return;
 		}
+		
 		player.sendMessage(ChatColor.AQUA + "Du hast den Spieler: " + Utils.getDisplayNameFormat(p) + ChatColor.AQUA + " in deine Freundesliste eingeladen.");
 		p.sendMessage(ChatColor.AQUA + "Der Spieler " + Utils.getDisplayNameFormat(player) + ChatColor.AQUA + " versucht dich");
 		p.sendMessage(ChatColor.AQUA + "in seine Freundesliste aufzunehmen.");
@@ -270,10 +275,10 @@ public class FLCommand {
 	
 	//---------------------------------------------------------------------------------------------------------------
 	
-	public boolean checkPlayerInFriendMap(Player player, String friend) throws SQLException {
+	public boolean checkPlayerInFriendMap(Player player, String friend) {
 		String f = "";
 		ArrayList<String> arr = friendMap.get(player);
-		if(arr.isEmpty()) {
+		if(arr == null || arr.isEmpty()) {
 			return false;
 		}
 		for(int i = 0; i < arr.size(); i++) {

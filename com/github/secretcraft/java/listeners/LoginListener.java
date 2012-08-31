@@ -38,8 +38,7 @@ public class LoginListener implements Listener {
 			toggleMap.put(player, true);
 		}
 		flCommand.updateFriendMap(player);
-		if(flCommand.getFriendMap().containsKey(player) && 
-				!(flCommand.getFriendsFromFriendMap(player) == null || flCommand.getFriendsFromFriendMap(player).isEmpty())) {
+		if(!(flCommand.getFriendsFromFriendMap(player) == null)) {
 			this.checkResults(player, true);
 		}
 	}
@@ -52,8 +51,7 @@ public class LoginListener implements Listener {
 		if(!toggleMap.containsKey(player)) {
 			toggleMap.put(player, true);
 		}
-		if(flCommand.getFriendMap().containsKey(player) && 
-				!(flCommand.getFriendsFromFriendMap(player) == null || flCommand.getFriendsFromFriendMap(player).isEmpty())) {
+		if(!(flCommand.getFriendsFromFriendMap(player) == null)) {
 			this.checkResults(player, false);
 		}
 	}

@@ -33,7 +33,7 @@ public class FLMessage {
 			friendList.add(p);
 		}
 		if (friendList.isEmpty()) {
-			player.sendMessage(ChatColor.RED + "Nobody in your Friend-List is online.");
+			player.sendMessage(ChatColor.RED + "Keiner in deiner Freundesliste ist online.");
 			return;
 		}
 		player.sendMessage(ChatColor.GRAY + "[mir -> " + ChatColor.GREEN + "Friendlist" + ChatColor.GRAY + "] " + ChatColor.WHITE + message);
